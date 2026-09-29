@@ -58,6 +58,11 @@ BGP-LAB/
     └── failover-testing.md
 ```
 
+
+## Lab Topology
+
+![BGP Lab Topology](docs/topology.svg)
+
 ## Configurations
 
 Published device configurations are sanitized before publication.
