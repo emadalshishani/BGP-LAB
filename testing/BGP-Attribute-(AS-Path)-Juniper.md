@@ -44,7 +44,7 @@ R1-PE1 → R3-P1 → R5-IGR1
 R1-PE1 → R4-P2 → R6-IGR2
 ```
 
-Before starting the AS-Path test, the previously used MED configuration had already been removed. The earlier **Metric 2** state on the R5 path was intentionally used as part of the lab to steer traffic away from R5 and through **R6-IGR2** for the MED exercise. It was then removed before beginning this AS-Path test. Therefore, the Metric 2 value is historical lab context, not an AS-Path test configuration.
+The previously configured MED remained active when the AS-Path test was started. It had been intentionally configured for the lab so that Internet traffic would be forwarded through **R6-IGR2** during the test period. Therefore, the **Metric 2** shown on the R5 route in the baseline output was still an active part of the lab state at the beginning of the AS-Path test. The MED configuration was removed later during the verification/cleanup stage, after the AS-Path behavior had been tested.
 
 ---
 
@@ -230,6 +230,22 @@ Captured replies:
 ```
 
 No packet loss was observed in the captured interval.
+
+---
+
+## MED Context During the AS-Path Test
+
+For clarity, the MED configuration was **not removed before this AS-Path test**. It remained active during the test so that the traffic path stayed through **R6-IGR2** while the AS-Path manipulation was being evaluated.
+
+The previously observed state was:
+
+```text
+R5 route: Metric 2
+R6 route: Metric 0
+```
+
+This was intentional lab setup and was used to keep the forwarding path through R6-IGR2 for the duration of the AS-Path exercise. The MED configuration was removed **during verification after the test**, not before it.
+
 
 ---
 
