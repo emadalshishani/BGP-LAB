@@ -4,7 +4,7 @@
 
 Verify the behavior of the BGP **Multi-Exit Discriminator (MED)** attribute in **AS1000** using two configuration approaches on **R5-IGR1**:
 
-1. Direct BGP export configuration.
+1. Direct BGP `metric-out` configuration.
 2. Policy-based MED configuration using `policy-options`.
 
 The test was performed while continuous ICMP traffic was running from **HQ PC2 (192.168.10.3)** toward **8.8.8.8**.
@@ -37,14 +37,14 @@ R1-PE1 → R4-P2 → R6-IGR2 → ISP2 / AS4000
 
 ---
 
-# Step 1 — Direct BGP MED Export
+# Step 1 — Direct BGP Metric-Out Configuration
 
 ## Configuration Applied
 
-The first test used direct BGP configuration:
+The first test used direct BGP `metric-out` configuration:
 
 ```text
-root@R5-IGR1# set protocols bgp group iBGP export MED
+root@R5-IGR1# set protocols bgp group iBGP metric-out 2
 ```
 
 No policy-based MED configuration was added at this stage.
@@ -232,12 +232,12 @@ Before Step 1:
 
 ---
 
-# Step 1 Result — Direct MED Export
+# Step 1 Result — Direct Metric-Out
 
 After applying:
 
 ```text
-set protocols bgp group iBGP export MED
+set protocols bgp group iBGP metric-out 2
 ```
 
 the route selection changed.
@@ -362,7 +362,7 @@ State: <Active Int Ext>
 Metric: 0
 ```
 
-This is the direct evidence that the observed route-selection decision changed from the R5 path to the R6 path after the direct MED export configuration.
+This is the direct evidence that the observed route-selection decision changed from the R5 path to the R6 path after the direct `metric-out 2` configuration.
 
 ---
 
@@ -440,185 +440,4 @@ The experiment was also intended to determine whether the two configuration meth
 
 ---
 
-## Step 2 — R1-PE1 BGP Route State
-
-The resulting default-route state was checked on R1-PE1:
-
-```text
-[edit]
-root@R1-PE1# run show route protocol bgp extensive 0.0.0.0
-
-inet.0: 26 destinations, 33 routes (26 active, 0 holddown, 0 hidden)
-0.0.0.0/0 (2 entries, 1 announced)
-TSI: KRT in-kernel 0.0.0.0/0 -> {indirect(262143)}
-Page 0 idx 0, (group eBGP type External) Type 1 val 0x99244a0 (adv_entry)
-   Advertised metrics:
-     Nexthop: Self
-     AS path: [1000] 4000 I
-     Communities:
-    Advertise: 00000001
-Path 0.0.0.0 from 6.6.6.6 Vector len 4.  Val: 0
-        *BGP    Preference: 170/-101
-                Next hop type: Indirect, Next hop index: 0
-                Address: 0x78e5d24
-                Next-hop reference count: 18
-                Kernel Table Id: 0
-                Source: 6.6.6.6
-                Next hop type: Router, Next hop index: 570
-                Next hop: 10.1.4.2 via ge-0/0/2.0, selected
-                Session Id: 0
-                Protocol next hop: 6.6.6.6
-                Indirect next hop: 0x791e218 262143 INH Session ID: 0
-                State: <Active Int Ext>
-                Local AS:  1000 Peer AS:  1000
-                Age: 15:18:37   Metric: 0       Metric2: 20
-                Validation State: unverified
-                ORR Generation-ID: 0
-                Task: BGP_1000.6.6.6.6
-                Announcement bits (3): 0-KRT 3-BGP_RT_Background 4-Resolve tree 4
-                AS path: 4000 I
-                Accepted
-                Localpref: 100
-                Router ID: 6.6.6.6
-                Thread: junos-main
-                Indirect next hops: 1
-                        Protocol next hop: 6.6.6.6 Metric: 20 ResolvState: Resolved
-                        Indirect next hop: 0x791e218 262143 INH Session ID: 0
-                        Indirect path forwarding next hops: 1
-                                Next hop type: Router
-                                Next hop: 10.1.4.2 via ge-0/0/2.0
-                                Session Id: 0
-                                6.6.6.6/32 Originating RIB: inet.0
-                                  Metric: 20 Node path count: 1
-                                  Forwarding nexthops: 1
-                                        Next hop type: Router
-                                        Next hop: 10.1.4.2 via ge-0/0/2.0
-                                        Session Id: 0
-         BGP    Preference: 170/-101
-                Next hop type: Indirect, Next hop index: 0
-                Address: 0x78e59a4
-                Next-hop reference count: 11
-                Kernel Table Id: 0
-                Source: 5.5.5.5
-                Next hop type: Router, Next hop index: 571
-                Next hop: 10.1.3.2 via ge-0/0/0.0, selected
-                Session Id: 0
-                Protocol next hop: 5.5.5.5
-                Indirect next hop: 0x791dee8 262142 INH Session ID: 0
-                State: <NotBest Int Ext Changed>
-                Inactive reason: Not Best in its group - Route Metric or MED comparison
-                Local AS:  1000 Peer AS:  1000
-                Age: 17         Metric: 1       Metric2: 20
-                Validation State: unverified
-                ORR Generation-ID: 0
-                Task: BGP_1000.5.5.5.5
-                AS path: 4000 I
-                Accepted
-                Localpref: 100
-                Router ID: 5.5.5.5
-                Thread: junos-main
-                Indirect next hops: 1
-                        Protocol next hop: 5.5.5.5 Metric: 20 ResolvState: Resolved
-                        Indirect next hop: 0x791dee8 262142 INH Session ID: 0
-                        Indirect path forwarding next hops: 1
-                                Next hop type: Router
-                                Next hop: 10.1.3.2 via ge-0/0/0.0
-                                Session Id: 0
-                                5.5.5.5/32 Originating RIB: inet.0
-                                  Metric: 20 Node path count: 1
-                                  Forwarding nexthops: 1
-                                        Next hop type: Router
-                                        Next hop: 10.1.3.2 via ge-0/0/0.0
-                                        Session Id: 0
-```
-
----
-
-## Step 2 Observation
-
-Compared with Step 1:
-
-```text
-R5 route:
-Metric 2  →  Metric 1
-
-R6 route:
-Metric 0  →  Metric 0
-```
-
-The R5 route remained non-best because Junos reported:
-
-```text
-Inactive reason: Not Best in its group - Route Metric or MED comparison
-```
-
-The active R6 route remained:
-
-```text
-Metric: 0
-```
-
-Therefore, the observed route state after adding the policy was:
-
-```text
-R6 = Metric 0 → Active
-R5 = Metric 1 → NotBest
-```
-
-### Important Evidence Limitation
-
-The captured output proves that the **final observed R5 Metric was 1** after the policy-based configuration was added while the Step 1 configuration remained present.
-
-It does **not**, by itself, prove the internal Junos precedence mechanism between the direct BGP MED export configuration and the policy-based metric operation.
-
-The test therefore documents the **observed result**, rather than claiming that both mechanisms are independently additive or that one universally overrides the other.
-
----
-
-## Comparison of the Two Phases
-
-| Phase | R5 Metric | R6 Metric | Selected Path | Evidence |
-|---|---:|---:|---|---|
-| Baseline | 0 | 0 | R5 | R1-PE1 route table + baseline traceroute |
-| Step 1 — Direct `export MED` | **2** | **0** | **R6** | R1-PE1 route table + post-change traceroute |
-| Step 2 — Policy metric 1 with Step 1 active | **1** | **0** | **R6** | R1-PE1 route table |
-
----
-
-## Test Result
-
-**PASS — MED behavior was observed and documented with CLI evidence.**
-
-The test produced three clearly distinguishable route-state observations:
-
-1. **Baseline:** R5 and R6 both showed Metric 0; R5 was selected.
-2. **Direct MED export:** R5 changed to Metric 2 while R6 remained at Metric 0; R6 became selected.
-3. **Policy-based MED added while Step 1 remained active:** R5 changed from Metric 2 to Metric 1 while R6 remained at Metric 0; R6 remained selected.
-
-The end-to-end traceroute confirms the forwarding-path change in Step 1.
-
-Continuous ping during Step 1 showed no packet loss in the captured interval.
-
-No Step 2 traceroute or Step 2 continuous-ping output was included in the captured evidence, so no additional Step 2 traffic-continuity claim is made here.
-
----
-
-## Evidence and Transparency
-
-This document intentionally preserves the captured CLI outputs used to reach the conclusions.
-
-The route-selection conclusions are based on:
-
-- R1-PE1 `show route protocol bgp extensive 0.0.0.0` output.
-- HQ PC2 traceroute before and after Step 1.
-- HQ PC2 continuous-ping output during Step 1.
-- The exact configuration commands recorded during both phases.
-
-Where the captured evidence does not establish an internal implementation detail, the document explicitly avoids making that claim.
-
-## Evidence Boundary
-
-This test verifies the observed MED behavior in the specific **AS1000 / R5-IGR1 / R1-PE1** topology and configuration used in this lab.
-
-It is not intended to claim that the observed numeric MED values or configuration interaction are universal for every Junos design.
-
+#
