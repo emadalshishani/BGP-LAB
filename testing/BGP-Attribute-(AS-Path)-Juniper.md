@@ -44,7 +44,22 @@ R1-PE1 → R3-P1 → R5-IGR1
 R1-PE1 → R4-P2 → R6-IGR2
 ```
 
-The previously configured MED remained active when the AS-Path test was started. It had been intentionally configured for the lab so that Internet traffic would be forwarded through **R6-IGR2** during the test period. Therefore, the **Metric 2** shown on the R5 route in the baseline output was still an active part of the lab state at the beginning of the AS-Path test. The MED configuration was removed later during the verification/cleanup stage, after the AS-Path behavior had been tested.
+## Lab Steering Context — MED
+
+Before the AS-Path test, the lab was intentionally placed in a specific forwarding state for educational purposes.
+
+In the normal state of this lab, with no BGP path attribute being used to influence the competing default routes, the R5 and R6 paths had equal relevant values and the route selection could fall through to the Router ID tie-breaker. R5-IGR1 uses Router ID/loopback **5.5.5.5**, while R6-IGR2 uses **6.6.6.6**. The lower Router ID on R5 therefore causes the R5 path to be selected in the normal baseline condition.
+
+For the MED exercise, MED was deliberately configured so that:
+
+```text
+R5 → Metric 2
+R6 → Metric 0
+```
+
+This was **lab steering**, not part of the AS-Path manipulation itself. The purpose was to move the Internet traffic path away from R5-IGR1 and make it pass through **R6-IGR2** so that the AS-Path manipulation could be tested specifically on R6.
+
+The MED configuration remained active throughout the AS-Path test. It was removed **during verification/cleanup after the AS-Path test**, not before it.
 
 ---
 
@@ -157,6 +172,8 @@ Before the AS-Path manipulation:
 - R5 route: `from 5.5.5.5`, **Metric 2**, AS path `4000 I`, NotBest.
 - R5's route was reported as non-best because of **Route Metric or MED comparison**.
 
+This state was intentional. The MED configuration was still active to keep the Internet forwarding path through **R6-IGR2** during the AS-Path exercise. The Metric 2 on R5 was therefore a pre-existing lab steering mechanism, not an AS-Path configuration.
+
 ---
 
 ## HQ PC2 — Baseline Traceroute
@@ -235,17 +252,16 @@ No packet loss was observed in the captured interval.
 
 ## MED Context During the AS-Path Test
 
-For clarity, the MED configuration was **not removed before this AS-Path test**. It remained active during the test so that the traffic path stayed through **R6-IGR2** while the AS-Path manipulation was being evaluated.
+The MED configuration remained active during the AS-Path test so that Internet traffic continued through **R6-IGR2** for the duration of the exercise.
 
-The previously observed state was:
+The steering state was:
 
 ```text
 R5 route: Metric 2
 R6 route: Metric 0
 ```
 
-This was intentional lab setup and was used to keep the forwarding path through R6-IGR2 for the duration of the AS-Path exercise. The MED configuration was removed **during verification after the test**, not before it.
-
+This was intentionally configured for the previous MED lab and kept in place while testing AS-Path on R6. After the AS-Path verification was completed, the MED configuration was removed during the verification/cleanup stage.
 
 ---
 
@@ -564,6 +580,8 @@ This is consistent with the observed route-selection state in the lab.
 ## Test Result
 
 **PASS — AS-Path manipulation, loop-prevention behavior, and path-length impact were demonstrated with CLI evidence.**
+
+The MED configuration used before and during this test was a deliberate lab-steering mechanism to keep traffic through R6-IGR2. It was not part of the AS-Path manipulation itself and was removed during verification/cleanup after the AS-Path test.
 
 The test followed an actual troubleshooting sequence:
 
