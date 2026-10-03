@@ -465,7 +465,7 @@ inet.0: 28 destinations, 36 routes (28 active, 0 holddown, 0 hidden)
                     >  to 10.1.3.1 via ge-0/0/0.0
 10.5.20.0/30       *[BGP/170] 00:00:06, MED 0, localpref 100, from 6.6.6.6
                       AS path: 3000 3000 3000 4000 I, validation-state: unverified
-                    >  to 10.1.3.1 via 10.1.3.1
+                    >  to 10.1.3.1 via ge-0/0/0.0
 10.6.10.0/30       *[BGP/170] 00:02:03, MED 0, localpref 100, from 5.5.5.5
                       AS path: 3000 I, validation-state: unverified
                     >  to 10.1.3.1 via ge-0/0/0.0
