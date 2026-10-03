@@ -412,7 +412,7 @@ Internet
 The captured route output and traceroute show that after enabling:
 
 ```text
-set protocols bgp group iBGP export MED
+set protocols bgp group iBGP metric-out 2
 ```
 
 the R5-derived default route changed from **Metric 0 to Metric 2**, while the R6-derived route remained at **Metric 0**.
