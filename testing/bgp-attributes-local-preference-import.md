@@ -291,3 +291,162 @@ This document records the behavior observed in this specific lab topology and co
 It does not claim that the selected paths are universally optimal or that the failover is hitless/seamless.
 
 The recorded packet loss during failover is explicitly included as part of the test evidence.
+
+
+---
+
+## Device Verification Output
+
+The following excerpts preserve the key CLI evidence from the test session. Only the lines needed to verify BGP state, Local Preference, and path selection are reproduced.
+
+### R5-IGR1 — Baseline BGP Route State
+
+Before applying the import policy, the default route had multiple BGP paths with Local Preference 100. The direct ISP2 path was active.
+
+```text
+root@R5-IGR1> show route 0.0.0.0/0
+
+0.0.0.0/0          *[BGP/170] ... localpref 100
+                      AS path: 4000 I
+                    >  to 10.5.20.1
+                    [BGP/170] ... localpref 100, from 6.6.6.6
+                      AS path: 4000 I
+                    >  to 10.5.6.2
+                    [BGP/170] ... localpref 100
+                      AS path: 3000 I
+                    >  to 10.5.10.1
+```
+
+### R5-IGR1 — After Import Policy
+
+The import policy changed the Local Preference of the route received directly from ISP2 from 100 to 99.
+
+```text
+set policy-options policy-statement local-pref term 1 then local-preference 99
+set protocols bgp group ebgp_AS4000 neighbor 10.5.20.1 import local-pref
+```
+
+Relevant route-selection evidence:
+
+```text
+Direct ISP2 path:
+Local Preference: 99
+Next Hop: 10.5.20.1
+
+Direct ISP1 path:
+Local Preference: 100
+Next Hop: 10.5.10.1
+```
+
+### HQ PC2 — Traceroute Before Import Policy
+
+```text
+1   192.168.10.1
+2   10.10.10.1
+3   10.10.30.2
+4   10.1.3.2
+5   10.3.5.2
+6   10.5.20.1
+7   10.142.13.1
+8   10.50.245.29
+```
+
+### HQ PC2 — Traceroute After Import Policy
+
+```text
+1   192.168.10.1
+2   10.10.10.1
+3   10.10.30.2
+4   10.1.3.2
+5   10.3.5.2
+6   10.5.10.1
+7   10.142.13.1
+8   10.50.245.29
+```
+
+### ISP1 Failure — R5-IGR1 BGP State
+
+After the ISP1 link failure, the R5 BGP session to ISP1 dropped while the ISP2 session remained established.
+
+```text
+root@R5-IGR1> show bgp summary
+
+10.5.10.1              3000    Connect
+10.5.20.1              4000    Established
+```
+
+### ISP1 Failure — R5-IGR1 Active Default Route
+
+After the failure, the active default route was received through R6-IGR2 with Local Preference 100.
+
+```text
+0.0.0.0/0          *[BGP/170] ... localpref 100
+                      AS path: 4000 I
+                    >  to 10.5.6.2
+```
+
+The direct ISP2 route remained available with the imported Local Preference of 99:
+
+```text
+Local Preference: 99
+Next Hop: 10.5.20.1
+```
+
+### HQ PC2 — Post-Failure Traceroute
+
+```text
+1   192.168.10.1
+2   10.10.10.1
+3   10.10.30.2
+4   10.1.4.2
+5   10.4.6.2
+6   10.6.20.1
+7   10.142.13.1
+8   10.50.245.29
+```
+
+### HQ PC2 — ICMP During Failover
+
+The captured continuous ping showed:
+
+```text
+Replies:  seq 1–3
+Timeouts: seq 4–47
+Reply:     seq 48 onward
+```
+
+This corresponds to **44 consecutive ICMP losses** during convergence.
+
+### Recovery — R5-IGR1 BGP State
+
+After restoring ISP1 and removing the import policy:
+
+```text
+root@R5-IGR1> show bgp summary
+
+10.5.10.1              3000    Established
+10.5.20.1              4000    Established
+```
+
+The active default route returned to the direct ISP2 next hop with Local Preference 100:
+
+```text
+0.0.0.0/0          *[BGP/170] ... localpref 100
+                      AS path: 4000 I
+                    >  to 10.5.20.1
+```
+
+### HQ PC2 — Traceroute After Recovery
+
+```text
+1   192.168.10.1
+2   10.10.10.1
+3   10.10.30.2
+4   10.1.3.2
+5   10.3.5.2
+6   10.5.20.1
+7   10.142.13.1
+8   10.50.245.29
+```
+
+> **Evidence note:** The excerpts above focus on the CLI lines that directly demonstrate the Local Preference change, BGP session state, active next hop, and end-to-end forwarding path. Dynamic packet counters and timestamps are intentionally omitted where they do not affect the conclusion.
