@@ -4,7 +4,7 @@
 
 Verify and troubleshoot **BGP AS-Path manipulation** on **R6-IGR2** using a Junos routing policy and BGP export.
 
-The test was performed while continuous ICMP traffic was running from:
+The AS-Path test was performed while continuous ICMP traffic was running from:
 
 - Source: **HQ PC2**
 - Source IP: `192.168.10.3`
@@ -44,7 +44,7 @@ R1-PE1 → R3-P1 → R5-IGR1
 R1-PE1 → R4-P2 → R6-IGR2
 ```
 
-At the beginning of the test, the R1-PE1 output showed the R5 route as active with **Metric 2** and the R6 route as active with **Metric 0**. The MED state shown in the captured output is therefore part of the observed starting condition of this AS-Path test.
+Before starting the AS-Path test, the previously used MED configuration had already been removed. The earlier **Metric 2** state on the R5 path was intentionally used as part of the lab to steer traffic away from R5 and through **R6-IGR2** for the MED exercise. It was then removed before beginning this AS-Path test. Therefore, the Metric 2 value is historical lab context, not an AS-Path test configuration.
 
 ---
 
