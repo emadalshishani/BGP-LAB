@@ -19,7 +19,7 @@ The lab contains **six autonomous systems** and combines **Juniper SRX/Junos** w
 
 ## Topology
 
-![Multi-AS BGP Lab Topology](docs/images/BGP-Topology.svg)
+![Multi-AS BGP Lab Topology](<docs/images/BGP Topology.svg>)
 
 ## Routing Design
 
