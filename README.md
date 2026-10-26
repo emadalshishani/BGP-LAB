@@ -17,6 +17,10 @@ The lab contains **six autonomous systems** and combines **Juniper SRX/Junos** w
 | AS3000 | ISP1 | Cisco IOS |
 | AS4000 | ISP2 | Cisco IOS |
 
+## Topology
+
+![Multi-AS BGP Lab Topology](docs/images/BGP-Topology.svg)
+
 ## Routing Design
 
 - HQ (AS100) ↔ AS1000: eBGP
